@@ -12,8 +12,6 @@ import (
 )
 
 var (
-	certFile = flag.String("cert", "", "")
-	keyFile  = flag.String("key", "", "")
 	root     = flag.String("root", "", "")
 	port     = flag.Int("port", -1, "")
 	realm    = flag.String("realm", "", "")
@@ -41,16 +39,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	absKey, err := filepath.Abs(*keyFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	absCert, err := filepath.Abs(*certFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	secret := auth.HtdigestFileProvider(*htdigest)
 	authenticator := auth.NewDigestAuthenticator(*realm, secret)
 
@@ -59,5 +47,5 @@ func main() {
 	hostport := fmt.Sprintf(":%d", *port)
 	authHandler := makeAuthHandler(http.FileServer(http.Dir(absRoot)))
 	handler := authenticator.Wrap(authHandler)
-	log.Fatal(http.ListenAndServeTLS(hostport, absCert, absKey, handler))
+	log.Fatal(http.ListenAndServe(hostport, handler))
 }
